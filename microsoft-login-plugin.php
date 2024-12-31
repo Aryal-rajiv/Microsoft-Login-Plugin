@@ -1,134 +1,254 @@
 <?php
 /**
- * Plugin Name: Microsoft Login Plugin
- * Description: Allow users to log in to WordPress admin using Microsoft login.
- * Version: 1.0.0
- * Author: Rajiv Aryal
+ * Plugin Name: Azure Authentication Settings
+ * Description: Stores Client ID, Client Secret, Tenant ID, and Redirect URI for Microsoft Azure authentication.
+ * Version: 1.0
+ * Author: Your Name
  */
- function microsoft_login_enqueue_scripts() {
-    wp_enqueue_style('microsoft-login-style', plugin_dir_url(__FILE__) . 'style.css');
-}
-add_action('admin_enqueue_scripts', 'microsoft_login_enqueue_scripts');
 
-// Add Menu Page
-function microsoft_login_menu_page() {
-    add_options_page(
-        'Microsoft Login Settings',
-        'Microsoft Login',
+// Prevent direct access to the file
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Hook to run the function when the plugin/theme is activated
+add_action('after_switch_theme', 'create_azure_auth_settings_table');
+
+function create_azure_auth_settings_table() {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'azure_auth_settings';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    // SQL to create the table
+    $sql = "CREATE TABLE $table_name (
+        id INT(11) NOT NULL AUTO_INCREMENT,
+        client_id VARCHAR(255) NOT NULL,
+        client_secret VARCHAR(255) NOT NULL,
+        tenant_id VARCHAR(255) NOT NULL,
+        redirect_uri VARCHAR(255) NOT NULL,
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+
+    // Include the WordPress dbDelta function
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+    // Create the table
+    dbDelta($sql);
+    error_log('Table creation SQL: ' . $sql);
+}
+
+// Add a settings page in the admin menu
+add_action('admin_menu', 'azure_auth_add_settings_page');
+
+function azure_auth_add_settings_page() {
+    add_menu_page(
+        'Azure Auth Settings',
+        'Azure Auth Settings',
         'manage_options',
-        'microsoft-login',
-        'microsoft_login_settings_page'
+        'azure-auth-settings',
+        'azure_auth_settings_page',
+        'dashicons-admin-generic',
+        100
     );
 }
-add_action('admin_menu', 'microsoft_login_menu_page');
 
+// Render the settings page
+function azure_auth_settings_page() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'azure_auth_settings';
 
-// Render Settings Page
-function microsoft_login_settings_page() {
+    // Save the settings when the form is submitted
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['azure_auth_save_settings'])) {
+        $client_id = sanitize_text_field($_POST['azure_client_id']);
+        $client_secret = sanitize_text_field($_POST['azure_client_secret']);
+        $tenant_id = sanitize_text_field($_POST['azure_tenant_id']);
+        $redirect_uri = esc_url_raw($_POST['azure_redirect_uri']);
+
+        $wpdb->replace(
+            $table_name,
+            [
+                'id' => 1, // Assuming there's only one row for settings, you can use a different identifier if needed
+                'client_id' => $client_id,
+                'client_secret' => $client_secret,
+                'tenant_id' => $tenant_id,
+                'redirect_uri' => $redirect_uri
+            ],
+            ['%d', '%s', '%s', '%s', '%s']
+        );
+
+        echo '<div class="updated"><p>Settings saved successfully!</p></div>';
+        error_log('Settings saved: ' . print_r($_POST, true));
+    }
+
+    // Retrieve the existing values
+    $settings = $wpdb->get_row("SELECT * FROM $table_name LIMIT 1", ARRAY_A);
+    $client_id = $settings['client_id'] ?? '';
+    $client_secret = $settings['client_secret'] ?? '';
+    $tenant_id = $settings['tenant_id'] ?? '';
+    $redirect_uri = $settings['redirect_uri'] ?? '';
+
     ?>
     <div class="wrap">
-        <h1>Microsoft Login Settings</h1>
-        <form method="post" action="options.php">
-            <?php
-            settings_fields('microsoft-login-settings-group');
-            do_settings_sections('microsoft-login-settings-group');
-            ?>
+        <h1>Azure Authentication Settings</h1>
+        <form method="post">
             <table class="form-table">
-                <tr valign="top">
-                    <th scope="row">Client ID</th>
-                    <td><input type="text" name="microsoft_client_id" value="<?php echo esc_attr(get_option('microsoft_client_id')); ?>" /></td>
+                <tr>
+                    <th scope="row"><label for="azure_client_id">Client ID</label></th>
+                    <td><input type="text" name="azure_client_id" id="azure_client_id" value="<?php echo esc_attr($client_id); ?>" class="regular-text"></td>
                 </tr>
-                <tr valign="top">
-                    <th scope="row">Client Secret</th>
-                    <td><input type="text" name="microsoft_client_secret" value="<?php echo esc_attr(get_option('microsoft_client_secret')); ?>" /></td>
+                <tr>
+                    <th scope="row"><label for="azure_client_secret">Client Secret</label></th>
+                    <td><input type="text" name="azure_client_secret" id="azure_client_secret" value="<?php echo esc_attr($client_secret); ?>" class="regular-text"></td>
                 </tr>
-                <tr valign="top">
-                    <th scope="row">Tenant ID</th>
-                    <td><input type="text" name="microsoft_tenant_id" value="<?php echo esc_attr(get_option('microsoft_tenant_id')); ?>" /></td>
+                <tr>
+                    <th scope="row"><label for="azure_tenant_id">Tenant ID</label></th>
+                    <td><input type="text" name="azure_tenant_id" id="azure_tenant_id" value="<?php echo esc_attr($tenant_id); ?>" class="regular-text"></td>
                 </tr>
-                <tr valign="top">
-                    <th scope="row">Redirect URI</th>
-                    <td><input type="text" name="microsoft_redirect_uri" value="<?php echo esc_attr(get_option('microsoft_redirect_uri')); ?>" /></td>
+                <tr>
+                    <th scope="row"><label for="azure_redirect_uri">Redirect URI</label></th>
+                    <td><input type="url" name="azure_redirect_uri" id="azure_redirect_uri" value="<?php echo esc_attr($redirect_uri); ?>" class="regular-text"></td>
                 </tr>
             </table>
-            <?php submit_button(); ?>
+            <?php submit_button('Save Settings', 'primary', 'azure_auth_save_settings'); ?>
         </form>
+    </div> 
+    <?php    }    ?>
 
-        <form method="post" action="">
-            <input type="hidden" name="action" value="microsoft_login_initiate">
-            <button type="submit" class="button button-primary">Login with Microsoft</button>
-        </form>
-    </div>
-    <?php
-}
-// Register Settings
-function microsoft_login_register_settings() {
-    register_setting('microsoft-login-settings-group', 'microsoft_client_id');
-    register_setting('microsoft-login-settings-group', 'microsoft_client_secret');
-    register_setting('microsoft-login-settings-group', 'microsoft_tenant_id');
-    register_setting('microsoft-login-settings-group', 'microsoft_redirect_uri');
-}
-add_action('admin_init', 'microsoft_login_register_settings');
 
-// Handle Microsoft Login Initiation
-function microsoft_login_initiate() {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'microsoft_login_initiate') {
-        $clientId = get_option('microsoft_client_id');
-        $tenantId = get_option('microsoft_tenant_id');
-        $redirectUri = get_option('microsoft_redirect_uri');
 
-        $authUrl = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/authorize?client_id=$clientId&response_type=code&redirect_uri=$redirectUri&scope=openid profile email";
 
-        wp_redirect($authUrl);
-        exit;
+
+
+
+
+    
+
+
+<?php
+
+// Hook to add "Login with Microsoft" button on the login page
+add_action('login_form', 'add_microsoft_login_button');
+
+function add_microsoft_login_button() {
+    // Fetch Azure settings from the database
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'azure_auth_settings';
+
+    $settings = $wpdb->get_row("SELECT * FROM $table_name LIMIT 1", ARRAY_A);
+
+    if (!$settings) {
+        echo '<p style="color:red; text-align:center;">Azure settings not configured!</p>';
+        return;
     }
+
+    $tenant_id = esc_attr($settings['tenant_id']);
+    $client_id = esc_attr($settings['client_id']);
+    $redirect_uri = esc_url($settings['redirect_uri']);
+
+    // Microsoft OAuth 2.0 authorization endpoint
+    $oauth_url = "https://login.microsoftonline.com/{$tenant_id}/oauth2/v2.0/authorize";
+    $params = [
+        'client_id' => $client_id,
+        'response_type' => 'code',
+        'redirect_uri' => $redirect_uri,
+        'response_mode' => 'query',
+        'scope' => 'https://graph.microsoft.com/User.Read',
+        'state' => wp_create_nonce('microsoft_login'), // Secure nonce
+    ];
+
+    $login_url = $oauth_url . '?' . http_build_query($params);
+
+    // Render the button
+    echo '<p style="text-align: center; margin-top: 20px;">
+        <a href="' . esc_url($login_url) . '" class="button button-secondary" style="background: #0078d7; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 4px;">
+            Login with Microsoft
+        </a>
+    </p>';
 }
-add_action('admin_post_microsoft_login_initiate', 'microsoft_login_initiate');
 
-// Handle Microsoft Login Callback
-function microsoft_login_callback() {
-    if (isset($_GET['code'])) {
-        $authCode = sanitize_text_field($_GET['code']);
+// Hook to handle OAuth callback
+add_action('init', 'handle_microsoft_login_callback');
 
-        $clientId = get_option('microsoft_client_id');
-        $clientSecret = get_option('microsoft_client_secret');
-        $tenantId = get_option('microsoft_tenant_id');
-        $redirectUri = get_option('microsoft_redirect_uri');
-
-        $tokenUrl = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token";
-        $response = wp_remote_post($tokenUrl, [
-            'body' => [
-                'client_id' => $clientId,
-                'client_secret' => $clientSecret,
-                'code' => $authCode,
-                'redirect_uri' => $redirectUri,
-                'grant_type' => 'authorization_code',
-            ],
-        ]);
-
-        $responseBody = wp_remote_retrieve_body($response);
-        $responseJson = json_decode($responseBody, true);
-
-        if (isset($responseJson['access_token'])) {
-            $userInfoUrl = "https://graph.microsoft.com/v1.0/me";
-            $userInfoResponse = wp_remote_get($userInfoUrl, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $responseJson['access_token'],
-                ],
-            ]);
-
-            $userInfo = json_decode(wp_remote_retrieve_body($userInfoResponse), true);
-
-            if (isset($userInfo['id'])) {
-                // Log in user or display user info
-                wp_die("Login successful. Welcome, {$userInfo['displayName']} ({$userInfo['mail']}).");
-            } else {
-                wp_die("Failed to retrieve user information.");
-            }
-        } else {
-            wp_die("Failed to authenticate with Microsoft.");
-        }
+function handle_microsoft_login_callback() {
+    if (!isset($_GET['code']) || !isset($_GET['state'])) {
+        return; // Not an OAuth callback
     }
-}
-add_action('admin_post_microsoft_login_callback', 'microsoft_login_callback');
 
+    // Validate nonce
+    if (!wp_verify_nonce($_GET['state'], 'microsoft_login')) {
+        wp_die('Invalid state parameter.');
+    }
+
+    // Fetch Azure settings from the database
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'azure_auth_settings';
+    $settings = $wpdb->get_row("SELECT * FROM $table_name LIMIT 1", ARRAY_A);
+
+    if (!$settings) {
+        wp_die('Azure settings not configured.');
+    }
+
+    $tenant_id = esc_attr($settings['tenant_id']);
+    $client_id = esc_attr($settings['client_id']);
+    $client_secret = esc_attr($settings['client_secret']);
+    $redirect_uri = esc_url($settings['redirect_uri']);
+
+    // Exchange authorization code for access token
+    $token_url = "https://login.microsoftonline.com/{$tenant_id}/oauth2/v2.0/token";
+
+    $response = wp_remote_post($token_url, [
+        'body' => [
+            'client_id' => $client_id,
+            'scope' => 'https://graph.microsoft.com/User.Read',
+            'code' => sanitize_text_field($_GET['code']),
+            'redirect_uri' => $redirect_uri,
+            'grant_type' => 'authorization_code',
+            'client_secret' => $client_secret,
+        ],
+    ]);
+
+    if (is_wp_error($response)) {
+        error_log('Token request failed: ' . $response->get_error_message());
+        wp_die('Token request failed: ' . $response->get_error_message());
+    }
+
+    $response_body = wp_remote_retrieve_body($response);
+    $token_data = json_decode($response_body, true);
+
+    if (!isset($token_data['access_token'])) {
+        wp_die('Failed to retrieve access token.');
+    }
+
+    // Use the access token to fetch Microsoft user info
+    $access_token = $token_data['access_token'];
+    $user_info_response = wp_remote_get('https://graph.microsoft.com/v1.0/me', [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $access_token,
+        ],
+    ]);
+
+    if (is_wp_error($user_info_response)) {
+        wp_die('Failed to fetch user info: ' . $user_info_response->get_error_message());
+    }
+
+    $user_info = json_decode(wp_remote_retrieve_body($user_info_response), true);
+
+    if (!isset($user_info['mail']) && !isset($user_info['userPrincipalName'])) {
+        wp_die('Failed to retrieve user email.');
+    }
+
+    // Extract user email and check if it exists in WordPress
+    $email = $user_info['mail'] ?? $user_info['userPrincipalName'];
+    $user = get_user_by('email', $email);
+
+    if (!$user) {
+        wp_die('Access Denied: No WordPress account is associated with this email.');
+    }
+
+    // Log in the user
+    wp_set_auth_cookie($user->ID);
+    wp_redirect(admin_url()); // Redirect to WordPress admin
+    exit;
+}
+?>
