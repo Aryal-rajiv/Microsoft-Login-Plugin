@@ -1,0 +1,94 @@
+# Azure Authentication Settings Plugin
+
+## Overview
+The Azure Authentication Settings plugin is designed to manage and store the necessary credentials for authenticating with Microsoft Azure. It allows users to configure the Client ID, Client Secret, Tenant ID, and Redirect URI required for Azure authentication. This plugin also provides a user-friendly admin interface for managing these settings.
+
+## Features
+- Creates a dedicated database table to store Azure authentication settings.
+- Provides an admin settings page to configure and save credentials.
+- Automatically saves and retrieves stored data for future use.
+- Uses WordPress hooks for secure and efficient integration.
+
+## Installation
+1. Download the plugin as a `.zip` file or clone the repository.
+2. Upload the plugin to your WordPress installation via the `Plugins` > `Add New` > `Upload Plugin` section.
+3. Activate the plugin from the `Plugins` page in the WordPress admin dashboard.
+4. Upon activation, the plugin automatically creates a database table `wp_azure_auth_settings` to store the settings.
+
+## Usage
+### Configuring Settings
+1. Navigate to the admin menu and locate the **Azure Auth Settings** option.
+2. Fill in the required fields:
+   - **Client ID**: Enter your Azure Application (client) ID.
+   - **Client Secret**: Enter the client secret generated in Azure.
+   - **Tenant ID**: Enter your Azure Tenant ID.
+   - **Redirect URI**: Enter the redirect URI matching your Azure App Registration.
+3. Click the **Save Settings** button.
+
+### Verifying Stored Data
+Once the settings are saved, they are stored in the `wp_azure_auth_settings` database table. If you wish to confirm the data is saved, you can query the database or revisit the admin page, where the saved credentials will be displayed in the respective fields.
+
+## Developer Notes
+### Database Table Creation
+The plugin uses the `register_activation_hook` to create a database table for storing settings. The table schema is as follows:
+```sql
+CREATE TABLE wp_azure_auth_settings (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    client_id VARCHAR(255) NOT NULL,
+    client_secret VARCHAR(255) NOT NULL,
+    tenant_id VARCHAR(255) NOT NULL,
+    redirect_uri VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
+);
+```
+### Key Functions
+#### `create_azure_auth_settings_table()`
+- Responsible for creating the database table.
+- Utilizes the `dbDelta` function for table creation.
+- Triggered on plugin activation via `register_activation_hook`.
+
+#### `azure_auth_add_settings_page()`
+- Adds the **Azure Auth Settings** menu to the WordPress admin dashboard.
+- Uses `add_menu_page` to register the settings page.
+
+#### `azure_auth_settings_page()`
+- Renders the settings form for configuring Azure credentials.
+- Saves settings to the database when the form is submitted.
+- Displays stored settings in the form fields for easy management.
+
+## Debugging
+### Debugging Table Creation
+- Check the WordPress debug log for messages using `error_log()`.
+- Example:
+  ```php
+  error_log('Table creation SQL: ' . $sql);
+  ```
+
+### Debugging Access Token Retrieval
+Ensure proper error handling when communicating with Azure endpoints. Example:
+```php
+if (is_wp_error($response)) {
+    error_log('WP Error: ' . $response->get_error_message());
+    return false;
+}
+```
+
+### Checking Database Table
+Run the following SQL query to verify if the table exists:
+```sql
+SHOW TABLES LIKE 'wp_azure_auth_settings';
+```
+
+## Troubleshooting
+- **Headers already sent error**: Ensure no unexpected output is generated before headers are sent.
+- **Table not created**: Deactivate and reactivate the plugin to trigger the table creation process.
+- **Failed to retrieve access token**: Verify Azure credentials and permissions, and debug the API request.
+
+## Changelog
+### Version 1.0
+- Initial release with database table creation and admin settings page.
+
+## Author
+- **Name**: Rajiv Aryal
+- **Contact**: aryalrajiv.com.np
+

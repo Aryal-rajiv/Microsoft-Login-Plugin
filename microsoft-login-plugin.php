@@ -6,13 +6,13 @@
  * Author: Your Name
  */
 
-// Prevent direct access to the file
+// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Hook to run the function when the plugin/theme is activated
-add_action('after_switch_theme', 'create_azure_auth_settings_table');
+// Hook to create the table when the plugin is activated
+register_activation_hook(__FILE__, 'create_azure_auth_settings_table');
 
 function create_azure_auth_settings_table() {
     global $wpdb;
@@ -20,8 +20,7 @@ function create_azure_auth_settings_table() {
     $table_name = $wpdb->prefix . 'azure_auth_settings';
     $charset_collate = $wpdb->get_charset_collate();
 
-    // SQL to create the table
-    $sql = "CREATE TABLE $table_name (
+    $sql = "CREATE TABLE {$table_name} (
         id INT(11) NOT NULL AUTO_INCREMENT,
         client_id VARCHAR(255) NOT NULL,
         client_secret VARCHAR(255) NOT NULL,
@@ -30,15 +29,13 @@ function create_azure_auth_settings_table() {
         PRIMARY KEY (id)
     ) $charset_collate;";
 
-    // Include the WordPress dbDelta function
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-
-    // Create the table
     dbDelta($sql);
-    error_log('Table creation SQL: ' . $sql);
+
+    error_log('Azure Auth Settings Table created or already exists.');
 }
 
-// Add a settings page in the admin menu
+// Add admin menu page
 add_action('admin_menu', 'azure_auth_add_settings_page');
 
 function azure_auth_add_settings_page() {
@@ -53,12 +50,12 @@ function azure_auth_add_settings_page() {
     );
 }
 
-// Render the settings page
+// Render the admin settings page
 function azure_auth_settings_page() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'azure_auth_settings';
 
-    // Save the settings when the form is submitted
+    // Save settings on form submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['azure_auth_save_settings'])) {
         $client_id = sanitize_text_field($_POST['azure_client_id']);
         $client_secret = sanitize_text_field($_POST['azure_client_secret']);
@@ -68,7 +65,7 @@ function azure_auth_settings_page() {
         $wpdb->replace(
             $table_name,
             [
-                'id' => 1, // Assuming there's only one row for settings, you can use a different identifier if needed
+                'id' => 1, // Single row for settings
                 'client_id' => $client_id,
                 'client_secret' => $client_secret,
                 'tenant_id' => $tenant_id,
@@ -78,11 +75,11 @@ function azure_auth_settings_page() {
         );
 
         echo '<div class="updated"><p>Settings saved successfully!</p></div>';
-        error_log('Settings saved: ' . print_r($_POST, true));
     }
 
-    // Retrieve the existing values
-    $settings = $wpdb->get_row("SELECT * FROM $table_name LIMIT 1", ARRAY_A);
+    // Retrieve existing values from the database
+    $settings = $wpdb->get_row("SELECT * FROM $table_name WHERE id = 1", ARRAY_A);
+
     $client_id = $settings['client_id'] ?? '';
     $client_secret = $settings['client_secret'] ?? '';
     $tenant_id = $settings['tenant_id'] ?? '';
@@ -112,9 +109,11 @@ function azure_auth_settings_page() {
             </table>
             <?php submit_button('Save Settings', 'primary', 'azure_auth_save_settings'); ?>
         </form>
-    </div> 
-    <?php    }    ?>
+    </div>
+    <?php
+}
 
+?>
 
 
 
