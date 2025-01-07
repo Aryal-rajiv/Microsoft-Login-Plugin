@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Azure Authentication Settings
  * Description: Stores Client ID, Client Secret, Tenant ID, and Redirect URI for Microsoft Azure authentication.
- * Version: 1.0
+ * Version: 1.1
  * Author: Your Name
  */
 
@@ -16,10 +16,8 @@ register_activation_hook(__FILE__, 'create_azure_auth_settings_table');
 
 function create_azure_auth_settings_table() {
     global $wpdb;
-
     $table_name = $wpdb->prefix . 'azure_auth_settings';
     $charset_collate = $wpdb->get_charset_collate();
-
     $sql = "CREATE TABLE {$table_name} (
         id INT(11) NOT NULL AUTO_INCREMENT,
         client_id VARCHAR(255) NOT NULL,
@@ -31,11 +29,18 @@ function create_azure_auth_settings_table() {
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
-
-    error_log('Azure Auth Settings Table created or already exists.');
 }
 
-// Add admin menu page
+// Hook to delete the table when the plugin is uninstalled
+register_uninstall_hook(__FILE__, 'delete_azure_auth_settings_table');
+
+function delete_azure_auth_settings_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'azure_auth_settings';
+    $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
+}
+
+// Hook to add admin menu page
 add_action('admin_menu', 'azure_auth_add_settings_page');
 
 function azure_auth_add_settings_page() {
@@ -65,7 +70,7 @@ function azure_auth_settings_page() {
         $wpdb->replace(
             $table_name,
             [
-                'id' => 1, // Single row for settings
+                'id' => 1,
                 'client_id' => $client_id,
                 'client_secret' => $client_secret,
                 'tenant_id' => $tenant_id,
@@ -96,7 +101,7 @@ function azure_auth_settings_page() {
                 </tr>
                 <tr>
                     <th scope="row"><label for="azure_client_secret">Client Secret</label></th>
-                    <td><input type="text" name="azure_client_secret" id="azure_client_secret" value="<?php echo esc_attr($client_secret); ?>" class="regular-text"></td>
+                    <td><input type="password" name="azure_client_secret" id="azure_client_secret" value="<?php echo esc_attr($client_secret); ?>" class="regular-text"></td>
                 </tr>
                 <tr>
                     <th scope="row"><label for="azure_tenant_id">Tenant ID</label></th>
@@ -113,24 +118,10 @@ function azure_auth_settings_page() {
     <?php
 }
 
-?>
-
-
-
-
-
-
-
-    
-
-
-<?php
-
 // Hook to add "Login with Microsoft" button on the login page
 add_action('login_form', 'add_microsoft_login_button');
 
 function add_microsoft_login_button() {
-    // Fetch Azure settings from the database
     global $wpdb;
     $table_name = $wpdb->prefix . 'azure_auth_settings';
 
@@ -145,7 +136,6 @@ function add_microsoft_login_button() {
     $client_id = esc_attr($settings['client_id']);
     $redirect_uri = esc_url($settings['redirect_uri']);
 
-    // Microsoft OAuth 2.0 authorization endpoint
     $oauth_url = "https://login.microsoftonline.com/{$tenant_id}/oauth2/v2.0/authorize";
     $params = [
         'client_id' => $client_id,
@@ -153,12 +143,11 @@ function add_microsoft_login_button() {
         'redirect_uri' => $redirect_uri,
         'response_mode' => 'query',
         'scope' => 'https://graph.microsoft.com/User.Read',
-        'state' => wp_create_nonce('microsoft_login'), // Secure nonce
+        'state' => wp_create_nonce('microsoft_login'),
     ];
 
     $login_url = $oauth_url . '?' . http_build_query($params);
 
-    // Render the button
     echo '<p style="text-align: center; margin-top: 20px;">
         <a href="' . esc_url($login_url) . '" class="button button-secondary" style="background: #0078d7; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 4px;">
             Login with Microsoft
@@ -166,7 +155,7 @@ function add_microsoft_login_button() {
     </p>';
 }
 
-// Hook to handle OAuth callback
+// Handle OAuth callback
 add_action('init', 'handle_microsoft_login_callback');
 
 function handle_microsoft_login_callback() {
@@ -233,16 +222,26 @@ function handle_microsoft_login_callback() {
 
     $user_info = json_decode(wp_remote_retrieve_body($user_info_response), true);
 
-    if (!isset($user_info['mail']) && !isset($user_info['userPrincipalName'])) {
-        wp_die('Failed to retrieve user email.');
+    // Extract user email
+    $email = strtolower($user_info['mail'] ?? $user_info['userPrincipalName'] ?? null);
+
+    if (!$email) {
+        wp_die('Failed to retrieve user email from Microsoft account.');
     }
 
-    // Extract user email and check if it exists in WordPress
-    $email = $user_info['mail'] ?? $user_info['userPrincipalName'];
+    // Debug email logging
+    error_log('Email from Microsoft: ' . $email);
+
+    // Check if user exists in WordPress
     $user = get_user_by('email', $email);
 
     if (!$user) {
-        wp_die('Access Denied: No WordPress account is associated with this email.');
+        // Optionally create a new user if no match is found
+        $user_id = wp_create_user($email, wp_generate_password(), $email);
+        if (is_wp_error($user_id)) {
+            wp_die('Failed to create WordPress user: ' . $user_id->get_error_message());
+        }
+        $user = get_user_by('id', $user_id);
     }
 
     // Log in the user
@@ -250,4 +249,3 @@ function handle_microsoft_login_callback() {
     wp_redirect(admin_url()); // Redirect to WordPress admin
     exit;
 }
-?>
