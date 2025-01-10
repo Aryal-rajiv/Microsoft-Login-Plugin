@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Azure Authentication Settings
- * Description: Stores Client ID, Client Secret, Tenant ID, and Redirect URI for Microsoft Azure authentication.
+ * Description: Enables Single Sign-On (SSO) with Microsoft Azure AD for WordPress.
  * Version: 1.1
  * Author: Your Name
  */
@@ -10,6 +10,11 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
+//Include necessary files here
+require_once plugin_dir_path(__FILE__) . 'admin-setting-page.php';
+require_once plugin_dir_path(__FILE__) . 'button-oath-handing.php';
+
 
 // Hook to create the table when the plugin is activated
 register_activation_hook(__FILE__, 'create_azure_auth_settings_table');
@@ -40,212 +45,4 @@ function delete_azure_auth_settings_table() {
     $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
 }
 
-// Hook to add admin menu page
-add_action('admin_menu', 'azure_auth_add_settings_page');
-
-function azure_auth_add_settings_page() {
-    add_menu_page(
-        'Azure Auth Settings',
-        'Azure Auth Settings',
-        'manage_options',
-        'azure-auth-settings',
-        'azure_auth_settings_page',
-        'dashicons-admin-generic',
-        100
-    );
-}
-
-// Render the admin settings page
-function azure_auth_settings_page() {
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'azure_auth_settings';
-
-    // Save settings on form submission
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['azure_auth_save_settings'])) {
-        $client_id = sanitize_text_field($_POST['azure_client_id']);
-        $client_secret = sanitize_text_field($_POST['azure_client_secret']);
-        $tenant_id = sanitize_text_field($_POST['azure_tenant_id']);
-        $redirect_uri = esc_url_raw($_POST['azure_redirect_uri']);
-
-        $wpdb->replace(
-            $table_name,
-            [
-                'id' => 1,
-                'client_id' => $client_id,
-                'client_secret' => $client_secret,
-                'tenant_id' => $tenant_id,
-                'redirect_uri' => $redirect_uri
-            ],
-            ['%d', '%s', '%s', '%s', '%s']
-        );
-
-        echo '<div class="updated"><p>Settings saved successfully!</p></div>';
-    }
-
-    // Retrieve existing values from the database
-    $settings = $wpdb->get_row("SELECT * FROM $table_name WHERE id = 1", ARRAY_A);
-
-    $client_id = $settings['client_id'] ?? '';
-    $client_secret = $settings['client_secret'] ?? '';
-    $tenant_id = $settings['tenant_id'] ?? '';
-    $redirect_uri = $settings['redirect_uri'] ?? '';
-
-    ?>
-    <div class="wrap">
-        <h1>Azure Authentication Settings</h1>
-        <form method="post">
-            <table class="form-table">
-                <tr>
-                    <th scope="row"><label for="azure_client_id">Client ID</label></th>
-                    <td><input type="text" name="azure_client_id" id="azure_client_id" value="<?php echo esc_attr($client_id); ?>" class="regular-text"></td>
-                </tr>
-                <tr>
-                    <th scope="row"><label for="azure_client_secret">Client Secret</label></th>
-                    <td><input type="password" name="azure_client_secret" id="azure_client_secret" value="<?php echo esc_attr($client_secret); ?>" class="regular-text"></td>
-                </tr>
-                <tr>
-                    <th scope="row"><label for="azure_tenant_id">Tenant ID</label></th>
-                    <td><input type="text" name="azure_tenant_id" id="azure_tenant_id" value="<?php echo esc_attr($tenant_id); ?>" class="regular-text"></td>
-                </tr>
-                <tr>
-                    <th scope="row"><label for="azure_redirect_uri">Redirect URI</label></th>
-                    <td><input type="url" name="azure_redirect_uri" id="azure_redirect_uri" value="<?php echo esc_attr($redirect_uri); ?>" class="regular-text"></td>
-                </tr>
-            </table>
-            <?php submit_button('Save Settings', 'primary', 'azure_auth_save_settings'); ?>
-        </form>
-    </div>
-    <?php
-}
-
-// Hook to add "Login with Microsoft" button on the login page
-add_action('login_form', 'add_microsoft_login_button');
-
-function add_microsoft_login_button() {
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'azure_auth_settings';
-
-    $settings = $wpdb->get_row("SELECT * FROM $table_name LIMIT 1", ARRAY_A);
-
-    if (!$settings) {
-        echo '<p style="color:red; text-align:center;">Azure settings not configured!</p>';
-        return;
-    }
-
-    $tenant_id = esc_attr($settings['tenant_id']);
-    $client_id = esc_attr($settings['client_id']);
-    $redirect_uri = esc_url($settings['redirect_uri']);
-
-    $oauth_url = "https://login.microsoftonline.com/{$tenant_id}/oauth2/v2.0/authorize";
-    $params = [
-        'client_id' => $client_id,
-        'response_type' => 'code',
-        'redirect_uri' => $redirect_uri,
-        'response_mode' => 'query',
-        'scope' => 'https://graph.microsoft.com/User.Read',
-        'state' => wp_create_nonce('microsoft_login'),
-    ];
-
-    $login_url = $oauth_url . '?' . http_build_query($params);
-
-    echo '<p style="text-align: center; margin-top: 20px;">
-        <a href="' . esc_url($login_url) . '" class="button button-secondary" style="background: #0078d7; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 4px;">
-            Login with Microsoft
-        </a>
-    </p>';
-}
-
-// Handle OAuth callback
-add_action('init', 'handle_microsoft_login_callback');
-
-function handle_microsoft_login_callback() {
-    if (!isset($_GET['code']) || !isset($_GET['state'])) {
-        return; // Not an OAuth callback
-    }
-
-    // Validate nonce
-    if (!wp_verify_nonce($_GET['state'], 'microsoft_login')) {
-        wp_die('Invalid state parameter.');
-    }
-
-    // Fetch Azure settings from the database
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'azure_auth_settings';
-    $settings = $wpdb->get_row("SELECT * FROM $table_name LIMIT 1", ARRAY_A);
-
-    if (!$settings) {
-        wp_die('Azure settings not configured.');
-    }
-
-    $tenant_id = esc_attr($settings['tenant_id']);
-    $client_id = esc_attr($settings['client_id']);
-    $client_secret = esc_attr($settings['client_secret']);
-    $redirect_uri = esc_url($settings['redirect_uri']);
-
-    // Exchange authorization code for access token
-    $token_url = "https://login.microsoftonline.com/{$tenant_id}/oauth2/v2.0/token";
-
-    $response = wp_remote_post($token_url, [
-        'body' => [
-            'client_id' => $client_id,
-            'scope' => 'https://graph.microsoft.com/User.Read',
-            'code' => sanitize_text_field($_GET['code']),
-            'redirect_uri' => $redirect_uri,
-            'grant_type' => 'authorization_code',
-            'client_secret' => $client_secret,
-        ],
-    ]);
-
-    if (is_wp_error($response)) {
-        error_log('Token request failed: ' . $response->get_error_message());
-        wp_die('Token request failed: ' . $response->get_error_message());
-    }
-
-    $response_body = wp_remote_retrieve_body($response);
-    $token_data = json_decode($response_body, true);
-
-    if (!isset($token_data['access_token'])) {
-        wp_die('Failed to retrieve access token.');
-    }
-
-    // Use the access token to fetch Microsoft user info
-    $access_token = $token_data['access_token'];
-    $user_info_response = wp_remote_get('https://graph.microsoft.com/v1.0/me', [
-        'headers' => [
-            'Authorization' => 'Bearer ' . $access_token,
-        ],
-    ]);
-
-    if (is_wp_error($user_info_response)) {
-        wp_die('Failed to fetch user info: ' . $user_info_response->get_error_message());
-    }
-
-    $user_info = json_decode(wp_remote_retrieve_body($user_info_response), true);
-
-    // Extract user email
-    $email = strtolower($user_info['mail'] ?? $user_info['userPrincipalName'] ?? null);
-
-    if (!$email) {
-        wp_die('Failed to retrieve user email from Microsoft account.');
-    }
-
-    // Debug email logging
-    error_log('Email from Microsoft: ' . $email);
-
-    // Check if user exists in WordPress
-    $user = get_user_by('email', $email);
-
-    if (!$user) {
-        // Optionally create a new user if no match is found
-        $user_id = wp_create_user($email, wp_generate_password(), $email);
-        if (is_wp_error($user_id)) {
-            wp_die('Failed to create WordPress user: ' . $user_id->get_error_message());
-        }
-        $user = get_user_by('id', $user_id);
-    }
-
-    // Log in the user
-    wp_set_auth_cookie($user->ID);
-    wp_redirect(admin_url()); // Redirect to WordPress admin
-    exit;
-}
+?>
