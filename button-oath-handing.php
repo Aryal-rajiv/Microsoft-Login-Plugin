@@ -5,9 +5,10 @@ if (!defined('ABSPATH')){
     exit;
 }
 
+
+
 // Hook to add "Login with Microsoft" button on the login page
 add_action('login_form', 'add_microsoft_login_button');
-
 function add_microsoft_login_button() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'azure_auth_settings';
@@ -31,18 +32,20 @@ function add_microsoft_login_button() {
         'response_mode' => 'query',
         'scope' => 'https://graph.microsoft.com/User.Read',
         'state' => wp_create_nonce('microsoft_login'),
+        'prompt' => 'select_account', // Force account selection
     ];
 
     $login_url = $oauth_url . '?' . http_build_query($params);
 
     echo '<p style="text-align: center; margin-top: 20px;">
-        <a href="' . esc_url($login_url) . '" class="button button-secondary" style="background: #0078d7; color: #fff; text-decoration: none; padding: 10px 10px; border-radius: 4px;">
+        <a href="' . esc_url($login_url) . '" class="button button-secondary" style="background: #0078d7; color: #fff; text-decoration: none; padding: 5px 75px; margin-bottom:20px; border-radius: 4px;">
             Login with Microsoft
         </a>
     </p>';
 }
 
-add_action('init', 'handle_microsoft_login_callback');
+add_action('admin_post_oidc_callback', 'handle_microsoft_login_callback');
+add_action('admin_post_nopriv_oidc_callback', 'handle_microsoft_login_callback');
 
 function handle_microsoft_login_callback() {
     if (!isset($_GET['code']) || !isset($_GET['state'])) {
@@ -138,9 +141,9 @@ function handle_microsoft_login_callback() {
             wp_die('Failed to create WordPress user: ' . $user_id->get_error_message());
         }
 
-        // Optionally, update user role or metadata
+        // Assign the user a role with sufficient permissions
         $user = get_user_by('id', $user_id);
-        $user->set_role('editor'); // Set default role
+        $user->set_role('administrator'); // Use lowercase 'administrator'
 
         // Log in the new user
         wp_set_auth_cookie($user_id);
