@@ -25,6 +25,7 @@ function azure_auth_settings_page() {
         $client_secret = sanitize_text_field($_POST['azure_client_secret']);
         $tenant_id = sanitize_text_field($_POST['azure_tenant_id']);
         $redirect_uri = esc_url_raw($_POST['azure_redirect_uri']);
+        $admin_role = sanitize_text_field($_POST['admin_role'] );
 
         $wpdb->replace(
             $table_name,
@@ -33,9 +34,10 @@ function azure_auth_settings_page() {
                 'client_id' => $client_id,
                 'client_secret' => $client_secret,
                 'tenant_id' => $tenant_id,
-                'redirect_uri' => $redirect_uri
+                'redirect_uri' => $redirect_uri,
+                'admin_role' =>$admin_role
             ],
-            ['%d', '%s', '%s', '%s', '%s']
+            ['%d', '%s', '%s', '%s', '%s', '%s']
         );
 
         echo '<div class="updated"><p>Settings saved successfully!</p></div>';
@@ -48,6 +50,7 @@ function azure_auth_settings_page() {
     $client_secret = $settings['client_secret'] ?? '';
     $tenant_id = $settings['tenant_id'] ?? '';
     $redirect_uri = $settings['redirect_uri'] ?? '';
+    $admin_role = $settings['admin_role'] ?? '';
 
     ?>
     <div class="wrap">
@@ -69,6 +72,10 @@ function azure_auth_settings_page() {
                 <tr>
                     <th scope="row"><label for="azure_redirect_uri">Redirect URI</label></th>
                     <td><input type="url" name="azure_redirect_uri" id="azure_redirect_uri" value="<?php echo esc_attr($redirect_uri); ?>" class="regular-text"></td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="admin_role">Admin Role</label></th>
+                    <td><input type="text" name="admin_role" id="admin_role" value="<?php echo esc_attr($admin_role); ?>" class="regular-text"></td>
                 </tr>
             </table>
             <?php submit_button('Save Settings', 'primary', 'azure_auth_save_settings'); ?>

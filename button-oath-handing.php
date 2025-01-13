@@ -70,6 +70,7 @@ function handle_microsoft_login_callback() {
     $client_id = esc_attr($settings['client_id']);
     $client_secret = esc_attr($settings['client_secret']);
     $redirect_uri = esc_url($settings['redirect_uri']);
+    $admin_role = esc_attr($settings['admin_role']);
 
     // Exchange authorization code for access token
     $token_url = "https://login.microsoftonline.com/{$tenant_id}/oauth2/v2.0/token";
@@ -143,7 +144,7 @@ function handle_microsoft_login_callback() {
 
         // Assign the user a role with sufficient permissions
         $user = get_user_by('id', $user_id);
-        $user->set_role('administrator'); // Use lowercase 'administrator'
+        $user->set_role($admin_role); // Use lowercase 'administrator'
 
         // Log in the new user
         wp_set_auth_cookie($user_id);

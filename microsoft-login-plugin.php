@@ -29,6 +29,7 @@ function create_azure_auth_settings_table() {
         client_secret VARCHAR(255) NOT NULL,
         tenant_id VARCHAR(255) NOT NULL,
         redirect_uri VARCHAR(255) NOT NULL,
+        admin_role VARCHAR(255) NOT NULL, 
         PRIMARY KEY (id)
     ) $charset_collate;";
 
