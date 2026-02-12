@@ -131,25 +131,7 @@ function handle_microsoft_login_callback() {
         wp_redirect(admin_url()); // Redirect to WordPress admin dashboard
         exit;
     } else {
-        // If the user doesn't exist, create a new user
-        $username = sanitize_user(str_replace('@', '_', $email), true); // Replace '@' with '_'
-        $username = $username . '_' . uniqid(); // Append a unique ID to ensure uniqueness
-
-        // Create a new user with a unique username
-        $user_id = wp_create_user($username, wp_generate_password(), $email);
-
-        if (is_wp_error($user_id)) {
-            wp_die('Failed to create WordPress user: ' . $user_id->get_error_message());
-        }
-
-        // Assign the user a role with sufficient permissions
-        $user = get_user_by('id', $user_id);
-        $user->set_role($admin_role); // Use lowercase 'administrator'
-
-        // Log in the new user
-        wp_set_auth_cookie($user_id);
-        wp_redirect(admin_url()); // Redirect to WordPress admin dashboard
-        exit;
+        wp_die('Username with this email must exist. Ask administrator in your company to create a user for you');
     }
 }
 ?>
