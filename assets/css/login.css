@@ -1,0 +1,78 @@
+/*
+ * "Sign in with Microsoft" button.
+ * Follows Microsoft's sign-in branding guidelines (light theme).
+ */
+.msentra-sso {
+	margin: 0 0 16px;
+}
+
+.msentra-sso__button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 41px;
+	padding: 0 12px;
+	border: 1px solid #8c8c8c;
+	border-radius: 0;
+	background: #fff;
+	color: #5e5e5e;
+	font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background-color 0.15s ease-in-out;
+}
+
+.msentra-sso__button:hover,
+.msentra-sso__button:active {
+	background: #f3f3f3;
+	color: #5e5e5e;
+}
+
+.msentra-sso__button:focus {
+	color: #5e5e5e;
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+.msentra-sso__logo {
+	flex: none;
+	width: 21px;
+	height: 21px;
+}
+
+.msentra-sso__separator {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 16px 0 0;
+	color: #646970;
+	font-size: 13px;
+	text-transform: uppercase;
+}
+
+.msentra-sso__separator::before,
+.msentra-sso__separator::after {
+	content: "";
+	flex: 1;
+	border-top: 1px solid #dcdcde;
+}
+
+.msentra-sso--shortcode {
+	max-width: 320px;
+}
+
+/* Once moved above the username field, the separator sits below the button. */
+.msentra-sso--top {
+	margin-bottom: 20px;
+}
+
+#loginform .msentra-sso:not(.msentra-sso--top) .msentra-sso__separator {
+	margin-bottom: 16px;
+}

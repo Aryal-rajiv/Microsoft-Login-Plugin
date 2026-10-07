@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<ruleset name="SSO Login for Microsoft Entra ID">
+	<description>Coding standards for the plugin.</description>
+
+	<file>.</file>
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg value="sp"/>
+	<arg name="colors"/>
+
+	<config name="minimum_wp_version" value="6.0"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="sso-login-for-microsoft-entra-id"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="msentra_sso"/>
+				<element value="MSEntraSSO"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>
