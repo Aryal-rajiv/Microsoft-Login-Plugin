@@ -1,0 +1,32 @@
+.msentra-sso-admin__layout {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 24px;
+}
+
+.msentra-sso-admin__form {
+	flex: 1 1 640px;
+	min-width: 0;
+}
+
+.msentra-sso-admin__help {
+	flex: 0 1 320px;
+	margin-top: 20px;
+	padding: 4px 20px 12px;
+	border: 1px solid #c3c4c7;
+	background: #fff;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.msentra-sso-admin__help ol {
+	margin-left: 1.25em;
+}
+
+.msentra-sso-admin__help li {
+	margin-bottom: 8px;
+}
+
+.msentra-sso-admin .form-table textarea.code {
+	max-width: 40em;
+}

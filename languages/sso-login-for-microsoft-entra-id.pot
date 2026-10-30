@@ -1,0 +1,358 @@
+# Copyright (C) 2026 Rajiv Aryal
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: SSO Login for Microsoft Entra ID 2.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/sso-login-for-microsoft-entra-id\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-07T03:43:37+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: sso-login-for-microsoft-entra-id\n"
+
+#. Plugin Name of the plugin
+#: sso-login-for-microsoft-entra-id.php:3
+#: includes/class-admin.php:52
+msgid "SSO Login for Microsoft Entra ID"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: sso-login-for-microsoft-entra-id.php:4
+msgid "https://github.com/Aryal-rajiv/Microsoft-Login-Plugin"
+msgstr ""
+
+#. Description of the plugin
+#: sso-login-for-microsoft-entra-id.php:5
+msgid "Let users sign in to WordPress with their Microsoft work or school account (Microsoft Entra ID, formerly Azure AD) using secure OpenID Connect single sign-on."
+msgstr ""
+
+#. Author of the plugin
+#: sso-login-for-microsoft-entra-id.php:9
+msgid "Rajiv Aryal"
+msgstr ""
+
+#. Author URI of the plugin
+#: sso-login-for-microsoft-entra-id.php:10
+msgid "https://aryalrajiv.com.np"
+msgstr ""
+
+#: includes/class-admin.php:53
+msgid "Microsoft Entra SSO"
+msgstr ""
+
+#: includes/class-admin.php:75
+msgid "Settings"
+msgstr ""
+
+#: includes/class-admin.php:92
+msgid "SSO Login for Microsoft Entra ID is almost ready."
+msgstr ""
+
+#: includes/class-admin.php:94
+msgid "Enter your app registration details to enable the \"Sign in with Microsoft\" button."
+msgstr ""
+
+#: includes/class-admin.php:112
+msgid "Connection"
+msgstr ""
+
+#: includes/class-admin.php:113
+msgid "Users and roles"
+msgstr ""
+
+#: includes/class-admin.php:114
+msgid "Login experience"
+msgstr ""
+
+#: includes/class-admin.php:117
+msgid "Redirect URI"
+msgstr ""
+
+#: includes/class-admin.php:118
+msgid "Application (client) ID"
+msgstr ""
+
+#: includes/class-admin.php:119
+msgid "Directory (tenant) ID"
+msgstr ""
+
+#: includes/class-admin.php:120
+msgid "Client secret"
+msgstr ""
+
+#: includes/class-admin.php:121
+msgid "Allowed tenant IDs"
+msgstr ""
+
+#: includes/class-admin.php:122
+msgid "Existing users"
+msgstr ""
+
+#: includes/class-admin.php:123
+msgid "New users"
+msgstr ""
+
+#: includes/class-admin.php:124
+msgid "Default role"
+msgstr ""
+
+#: includes/class-admin.php:125
+msgid "Allowed email domains"
+msgstr ""
+
+#: includes/class-admin.php:126
+msgid "Role mapping"
+msgstr ""
+
+#: includes/class-admin.php:127
+msgid "Role sync"
+msgstr ""
+
+#: includes/class-admin.php:128
+msgid "Login page"
+msgstr ""
+
+#: includes/class-admin.php:129
+msgid "Button text"
+msgstr ""
+
+#: includes/class-admin.php:130
+msgid "After sign-in"
+msgstr ""
+
+#: includes/class-admin.php:131
+msgid "Sign out"
+msgstr ""
+
+#: includes/class-admin.php:165
+msgid "Quick setup"
+msgstr ""
+
+#. translators: %s: link to the Microsoft Entra admin center.
+#: includes/class-admin.php:171
+#, php-format
+msgid "In the %s, go to Identity → Applications → App registrations → New registration."
+msgstr ""
+
+#: includes/class-admin.php:172
+msgid "Microsoft Entra admin center"
+msgstr ""
+
+#: includes/class-admin.php:176
+msgid "Choose who can sign in (usually \"Accounts in this organizational directory only\")."
+msgstr ""
+
+#: includes/class-admin.php:177
+msgid "Under Redirect URI choose \"Web\" and paste the Redirect URI shown on this page."
+msgstr ""
+
+#: includes/class-admin.php:178
+msgid "Copy the Application (client) ID and Directory (tenant) ID from the Overview page."
+msgstr ""
+
+#: includes/class-admin.php:179
+msgid "Under Certificates & secrets create a client secret and copy its Value (not the Secret ID)."
+msgstr ""
+
+#: includes/class-admin.php:180
+msgid "Save these settings and test the \"Sign in with Microsoft\" button in a private browser window."
+msgstr ""
+
+#: includes/class-admin.php:183
+msgid "Full documentation"
+msgstr ""
+
+#: includes/class-admin.php:186
+msgid "Shortcode"
+msgstr ""
+
+#: includes/class-admin.php:187
+msgid "Place the sign-in button on any page:"
+msgstr ""
+
+#: includes/class-admin.php:200
+msgid "Details of the app registration in Microsoft Entra ID (formerly Azure Active Directory)."
+msgstr ""
+
+#: includes/class-admin.php:207
+msgid "Control which Microsoft accounts can sign in and which WordPress role they get."
+msgstr ""
+
+#. translators: %s: PHP constant name.
+#: includes/class-admin.php:253
+#, php-format
+msgid "Defined in wp-config.php by the %s constant."
+msgstr ""
+
+#: includes/class-admin.php:316
+msgid "Add this exact URL as a <strong>Web</strong> redirect URI in your app registration (Authentication → Platform configurations)."
+msgstr ""
+
+#: includes/class-admin.php:331
+msgid "Your directory (tenant) ID or a verified domain such as <code>contoso.onmicrosoft.com</code>. Use <code>organizations</code> or <code>common</code> only for multi-tenant apps, together with the allowed tenant IDs below."
+msgstr ""
+
+#: includes/class-admin.php:348
+msgid "Saved — leave blank to keep the current secret"
+msgstr ""
+
+#: includes/class-admin.php:354
+msgid "Remove the saved secret"
+msgstr ""
+
+#: includes/class-admin.php:357
+msgid "Paste the secret <strong>Value</strong>. Secrets expire: set a reminder to renew it. For extra security define <code>MSENTRA_SSO_CLIENT_SECRET</code> in wp-config.php instead."
+msgstr ""
+
+#: includes/class-admin.php:365
+msgid "Only used when the tenant is <code>common</code>, <code>organizations</code> or <code>consumers</code>. One tenant ID per line. Sign-ins from any other directory are rejected, which protects you from look-alike accounts in foreign directories."
+msgstr ""
+
+#: includes/class-admin.php:372
+msgid "Link Microsoft accounts to existing WordPress users with the same email address"
+msgstr ""
+
+#: includes/class-admin.php:373
+msgid "After the first sign-in the accounts stay linked by their immutable Microsoft object ID, even if the email address changes later."
+msgstr ""
+
+#: includes/class-admin.php:380
+msgid "Create a WordPress account the first time someone signs in with Microsoft"
+msgstr ""
+
+#: includes/class-admin.php:381
+msgid "When disabled, only people who already have an account on this site can sign in."
+msgstr ""
+
+#: includes/class-admin.php:393
+msgid "Role given to new users when no role mapping matches. Administrator can only be granted through the role mapping."
+msgstr ""
+
+#: includes/class-admin.php:401
+msgid "Optional. One domain per line. When set, only Microsoft accounts with these email domains can sign in."
+msgstr ""
+
+#. translators: %s: list of role slugs.
+#: includes/class-admin.php:413
+#, php-format
+msgid "One rule per line: <code>Entra app role value or group object ID = WordPress role</code>. The first matching line wins. App roles come from the token's <code>roles</code> claim; group IDs require the <code>groups</code> claim to be enabled under Token configuration. Available roles: %s."
+msgstr ""
+
+#: includes/class-admin.php:423
+msgid "Update the role of existing users on every sign-in when a role mapping rule matches"
+msgstr ""
+
+#: includes/class-admin.php:424
+msgid "Make sure your own account matches the right rule before enabling this, so you do not lose administrator access."
+msgstr ""
+
+#: includes/class-admin.php:432
+msgid "Show a \"Sign in with Microsoft\" button above the WordPress login form"
+msgstr ""
+
+#: includes/class-admin.php:433
+msgid "Send visitors straight to Microsoft (skip the WordPress login form)"
+msgstr ""
+
+#. translators: %s: login URL that shows the regular form.
+#: includes/class-admin.php:449
+#, php-format
+msgid "In redirect mode the regular form stays available at %s."
+msgstr ""
+
+#: includes/class-admin.php:459
+#: includes/class-login-ui.php:112
+msgid "Sign in with Microsoft"
+msgstr ""
+
+#: includes/class-admin.php:467
+msgid "Optional page to open after signing in. Defaults to the page the user came from, or the dashboard."
+msgstr ""
+
+#: includes/class-admin.php:474
+msgid "Also sign users out of Microsoft when they log out of WordPress"
+msgstr ""
+
+#: includes/class-admin.php:489
+msgid "Microsoft account"
+msgstr ""
+
+#: includes/class-admin.php:492
+msgid "Linked identity"
+msgstr ""
+
+#: includes/class-admin.php:495
+msgid "Object ID:"
+msgstr ""
+
+#: includes/class-admin.php:496
+msgid "Tenant ID:"
+msgstr ""
+
+#: includes/class-admin.php:501
+msgid "Unlink this Microsoft account"
+msgstr ""
+
+#: includes/class-login-ui.php:67
+msgid "or"
+msgstr ""
+
+#: includes/class-login-ui.php:189
+msgid "Microsoft sign-in failed:"
+msgstr ""
+
+#: includes/class-login-ui.php:191
+msgid "Microsoft sign-in has not been configured yet."
+msgstr ""
+
+#: includes/class-login-ui.php:192
+msgid "Your sign-in session expired or was started in another browser. Please try again."
+msgstr ""
+
+#: includes/class-login-ui.php:193
+msgid "The sign-in was cancelled or permission was not granted."
+msgstr ""
+
+#: includes/class-login-ui.php:194
+msgid "Microsoft could not complete the sign-in. Please try again or contact the site administrator."
+msgstr ""
+
+#: includes/class-login-ui.php:195
+msgid "The site could not verify your sign-in with Microsoft. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-login-ui.php:196
+msgid "The sign-in response from Microsoft was not valid. Please try again."
+msgstr ""
+
+#: includes/class-login-ui.php:197
+msgid "Accounts from your organization are not allowed to sign in to this site."
+msgstr ""
+
+#: includes/class-login-ui.php:198
+msgid "Accounts with your email domain are not allowed to sign in to this site."
+msgstr ""
+
+#: includes/class-login-ui.php:199
+msgid "Your Microsoft account does not have an email address."
+msgstr ""
+
+#: includes/class-login-ui.php:200
+msgid "There is no account on this site for your Microsoft account. Please ask the site administrator to create one for you."
+msgstr ""
+
+#: includes/class-login-ui.php:201
+msgid "The account with your email address is already linked to a different Microsoft account. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-login-ui.php:202
+msgid "Your account could not be created. Please contact the site administrator."
+msgstr ""
+
+#: includes/class-login-ui.php:205
+msgid "Please try again or contact the site administrator."
+msgstr ""
